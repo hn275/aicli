@@ -1,33 +1,39 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
-	"os"
 
-	"github.com/hn275/aicli/openai"
+	"github.com/hn275/aicli/ui"
 	"github.com/joho/godotenv"
 )
 
-var key string
+// var key string
 
 func init() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatal(err)
 	}
 
-	key = os.Getenv("OPENAI_API_KEY")
+	// key = os.Getenv("OPENAI_API_KEY")
 }
 
 func main() {
+	data := ui.RenderInput()
+	fmt.Println(data)
+
+}
+
+/*
+func request() {
 	var client http.Client
 	req := openai.OpenAIRequest{
 		Model: openai.GPT35_TURBO,
 		Messages: []openai.RequestMessage{
-			{Role: "user", Content: "Give me code for a drawer React component with TypeScript, no explanation needed"},
+			{
+				Role:    "user",
+				Content: "Give me code for a drawer React component with TypeScript, no explanation needed",
+			},
 		},
 	}
 
@@ -56,5 +62,5 @@ func main() {
 	for _, v := range choices {
 		log.Println(v.Message.Content)
 	}
-
 }
+*/
