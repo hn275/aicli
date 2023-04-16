@@ -19,8 +19,9 @@ func init() {
 }
 
 func main() {
-	data := ui.RenderInput()
-	fmt.Println(data)
+	p := ui.RenderInput()
+	p.Kill()
+	fmt.Println("Done")
 
 }
 
