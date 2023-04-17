@@ -1,67 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/hn275/aicli/ui"
-	"github.com/joho/godotenv"
 )
 
-// var key string
-
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(err)
-	}
-
-	// key = os.Getenv("OPENAI_API_KEY")
-}
-
 func main() {
-	p := ui.RenderInput()
-	p.Kill()
-	fmt.Println("Done")
-
-}
-
-/*
-func request() {
-	var client http.Client
-	req := openai.OpenAIRequest{
-		Model: openai.GPT35_TURBO,
-		Messages: []openai.RequestMessage{
-			{
-				Role:    "user",
-				Content: "Give me code for a drawer React component with TypeScript, no explanation needed",
-			},
-		},
-	}
-
-	bodyJson, err := json.Marshal(&req)
+	p := tea.NewProgram(ui.NewModel())
+	_, err := p.Run()
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	buf := bytes.NewBuffer(bodyJson)
-
-	request, _ := http.NewRequest("POST", openai.Chat_URL, buf)
-	request.Header.Add("authorization", fmt.Sprintf("Bearer %s", key))
-	request.Header.Add("content-type", "application/json")
-
-	resp, err := client.Do(request)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer resp.Body.Close()
-
-	var response openai.OpenAIResponse
-	json.NewDecoder(resp.Body).Decode(&response)
-
-	choices := response.Choices
-	for _, v := range choices {
-		log.Println(v.Message.Content)
-	}
 }
-*/
