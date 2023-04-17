@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/spinner"
@@ -70,6 +72,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case tea.KeyEsc:
 			return m, tea.Quit
+
+		case tea.KeyCtrlC:
+			os.Exit(0)
 		}
 
 	case spinner.TickMsg:
@@ -97,7 +102,8 @@ func (m model) View() string {
 	if m.isLoading {
 		out = append(out, m.spinner.View()+" uno momento...")
 	} else {
-		out = append(out, m.input.View(), "ESC to quit")
+		count := fmt.Sprintf("\n%d/%d", len(m.input.Value()), m.input.CharLimit)
+		out = append(out, m.input.View()+withColor(200, count))
 
 	}
 

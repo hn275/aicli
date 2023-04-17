@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -45,6 +46,12 @@ func (m model) fetchAI() (model, tea.Cmd) {
 	return m, cmd
 }
 
+// DBG
+func dbg(a string) tea.Msg {
+	time.Sleep(time.Second)
+	return aiResponse(a)
+
+}
 func fetch(prompt string) tea.Cmd {
 	if err := godotenv.Load(); err != nil {
 		panic(err)
@@ -53,10 +60,7 @@ func fetch(prompt string) tea.Cmd {
 	key := os.Getenv("OPENAI_API_KEY")
 
 	return func() tea.Msg {
-		/*
-			time.Sleep(time.Second)
-			return aiResponse(prompt)
-		*/
+		return dbg(prompt)
 		var client http.Client
 		req := openai.OpenAIRequest{
 			Model: openai.GPT35_TURBO,
