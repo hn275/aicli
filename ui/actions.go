@@ -3,59 +3,67 @@ package ui
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/hn275/aicli/openai"
 	"github.com/joho/godotenv"
 )
 
 type aiResponse string
 
-func (m model) renderResponse(response aiResponse) (model, tea.Cmd) {
-	var cmd tea.Cmd
-	m.output = response
-	m.isLoading = false
-	m.input.Reset()
+func (m model) renderOutput() string {
+	out := ""
+	for _, v := range m.output {
+		col := 69
+		if v.sender == gpt {
+			col = 123
+		}
 
-	return m, cmd
+		out += fmt.Sprintf("  %s: %s\n", withColor(col, v.sender), v.content)
+	}
 
+	return out
 }
 
 func (m model) fetchAI() (model, tea.Cmd) {
-	if m.input.Value() == "" || !m.onInput {
+	if m.input.Value() == "" || !m.allowInput {
 		return m, nil
 	}
 
+	m.output = append(m.output, chatMessage{you, m.input.Value()})
+
 	m.isLoading = true
-	m.onInput = false
-	cmd := tea.Batch(m.spinner.Tick, fetch(&m))
+	m.allowInput = false
+	prompt := m.input.Value()
+	m.input.Reset()
+	cmd := tea.Batch(m.spinner.Tick, fetch(prompt))
 	return m, cmd
 }
 
-func fetch(m *model) tea.Cmd {
+func fetch(prompt string) tea.Cmd {
 	if err := godotenv.Load(); err != nil {
-		m.err = errors.New("[ERROR] unable to load env file")
-		return nil
+		panic(err)
 	}
 
 	key := os.Getenv("OPENAI_API_KEY")
 
 	return func() tea.Msg {
-		time.Sleep(time.Second)
-		return aiResponse(m.input.Value())
+		/*
+			time.Sleep(time.Second)
+			return aiResponse(prompt)
+		*/
 		var client http.Client
 		req := openai.OpenAIRequest{
 			Model: openai.GPT35_TURBO,
 			Messages: []openai.RequestMessage{
 				{
 					Role:    "user",
-					Content: m.input.Value(),
+					Content: prompt,
 				},
 			},
 		}
@@ -87,4 +95,13 @@ func fetch(m *model) tea.Cmd {
 		result := response.Choices[0]
 		return aiResponse(result.Message.Content)
 	}
+}
+
+func withColor(color int, content string) string {
+	if color < 0 || color > 256 {
+		panic("color out of range: 0 - 256")
+	}
+
+	col := fmt.Sprintf("%d", color)
+	return lipgloss.NewStyle().Foreground(lipgloss.Color(col)).Render(content)
 }
