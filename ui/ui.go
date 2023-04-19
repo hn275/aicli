@@ -9,8 +9,6 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/mitchellh/go-wordwrap"
-	"golang.org/x/term"
 )
 
 const (
@@ -41,7 +39,7 @@ func NewModel() model {
 	textInput.Width = 100
 
 	sp := spinner.New()
-	sp.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("69"))
+	sp.Style = lipgloss.NewStyle().Foreground(lipgloss.Color(themeColor))
 
 	return model{
 		allowInput: true,
@@ -62,11 +60,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case aiResponse:
-		w, _, err := term.GetSize(0)
-		if err != nil {
-			panic(err)
-		}
-		response := wordwrap.WrapString(string(msg), uint(w))
+		response := withWordWrap(string(msg))
 		m.output = append(m.output, chatMessage{gpt, response})
 		m.isLoading = false
 		m.allowInput = true
@@ -102,15 +96,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	out := []string{
-		withColor(69, "ChatGPT\n"),
+		withColor(themeColor, "AIcli\n"),
 		m.renderOutput(),
 	}
 
 	if m.isLoading {
 		out = append(out, m.spinner.View()+" uno momento...")
 	} else {
-		count := fmt.Sprintf("\n%d/%d", len(m.input.Value()), m.input.CharLimit)
-		out = append(out, m.input.View()+withColor(200, count))
+		c := fmt.Sprintf("(%d/%d)", len(m.input.Value()), m.input.CharLimit)
+		c = withColor(themeColor, c)
+		count := fmt.Sprintf("\n%s%s", c, m.input.View())
+		out = append(out, count)
 	}
 
 	return strings.Join(out, "\n")

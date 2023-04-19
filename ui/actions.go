@@ -7,6 +7,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/hn275/aicli/openai"
+	"github.com/mitchellh/go-wordwrap"
+	"golang.org/x/term"
 )
 
 type aiResponse string
@@ -14,9 +16,9 @@ type aiResponse string
 func (m model) renderOutput() string {
 	out := ""
 	for _, v := range m.output {
-		col := 69
+		col := youColor
 		if v.sender == gpt {
-			col = 123
+			col = gptColor
 		}
 
 		out += fmt.Sprintf("%s:\n%s\n\n", withColor(col, v.sender), v.content)
@@ -58,11 +60,14 @@ func fetch(prompt string) tea.Cmd {
 	}
 }
 
-func withColor(color int, content string) string {
-	if color < 0 || color > 256 {
-		panic("color out of range: 0 - 256")
-	}
+func withColor(color, content string) string {
+	return lipgloss.NewStyle().Foreground(lipgloss.Color(color)).Render(content)
+}
 
-	col := fmt.Sprintf("%d", color)
-	return lipgloss.NewStyle().Foreground(lipgloss.Color(col)).Render(content)
+func withWordWrap(s string) string {
+	w, _, err := term.GetSize(0)
+	if err != nil {
+		panic(err)
+	}
+	return wordwrap.WrapString(s, uint(w))
 }
