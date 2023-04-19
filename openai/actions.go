@@ -5,19 +5,16 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
-
-	"github.com/joho/godotenv"
 )
 
 var key string
 
 func init() {
-	if err := godotenv.Load(); err != nil {
-		panic(err)
+	openAIConfig, err := parseConfig()
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	key = os.Getenv("OPENAI_API_KEY")
+	key = openAIConfig.OpenAIAPIKey
 }
 
 func ChatRequest(prompt string) (*OpenAIResponse, *OpenAIError) {
@@ -40,7 +37,7 @@ func ChatRequest(prompt string) (*OpenAIResponse, *OpenAIError) {
 	buf := bytes.NewBuffer(body)
 
 	request, _ := http.NewRequest("POST", Chat_URL, buf)
-	request.Header.Add("authorization", "Bearer"+key)
+	request.Header.Add("authorization", "Bearer "+key)
 	request.Header.Add("content-type", "application/json")
 
 	resp, err := client.Do(request)
