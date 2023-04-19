@@ -46,3 +46,7 @@ type ResponseUsage struct {
 	CompletionTokens int64 `json:"completion_tokens"`
 	TotalTokens      int64 `json:"total_tokens"`
 }
+
+type OpenAIConfig struct {
+	OpenAIAPIKey string `yaml:"OPENAI_API_KEY"`
+}
