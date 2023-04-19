@@ -4,6 +4,13 @@ const Chat_URL = "https://api.openai.com/v1/chat/completions"
 
 const GPT35_TURBO = "gpt-3.5-turbo"
 
+type OpenAIError struct {
+	Error struct {
+		Message string `json:"message"`
+		Type    string `json:"type"`
+	} `json:"error"`
+}
+
 type OpenAIRequest struct {
 	Model    string           `json:"model"`
 	Messages []RequestMessage `json:"messages"`

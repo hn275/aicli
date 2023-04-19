@@ -3,7 +3,6 @@ package openai
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -21,7 +20,7 @@ func init() {
 	key = os.Getenv("OPENAI_API_KEY")
 }
 
-func ChatRequest(prompt string) (string, error) {
+func ChatRequest(prompt string) (*OpenAIResponse, *OpenAIError) {
 	var client http.Client
 	req := OpenAIRequest{
 		Model: GPT35_TURBO,
@@ -33,15 +32,15 @@ func ChatRequest(prompt string) (string, error) {
 		},
 	}
 
-	bodyJson, err := json.Marshal(&req)
+	body, err := json.Marshal(&req)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	buf := bytes.NewBuffer(bodyJson)
+	buf := bytes.NewBuffer(body)
 
 	request, _ := http.NewRequest("POST", Chat_URL, buf)
-	request.Header.Add("authorization", fmt.Sprintf("Bearer %s", key))
+	request.Header.Add("authorization", "Bearer"+key)
 	request.Header.Add("content-type", "application/json")
 
 	resp, err := client.Do(request)
@@ -51,13 +50,17 @@ func ChatRequest(prompt string) (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		// TODO: get error message from chat gpt here
-		return "", fmt.Errorf("fetched failed: %v", resp.StatusCode)
+		var err OpenAIError
+		if err := json.NewDecoder(resp.Body).Decode(&err); err != nil {
+			panic(err)
+		}
+		return nil, &err
 	}
 
 	var response OpenAIResponse
-	json.NewDecoder(resp.Body).Decode(&response)
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		panic(err)
+	}
 
-	result := response.Choices[0]
-	return result.Message.Content, nil
+	return &response, nil
 }
