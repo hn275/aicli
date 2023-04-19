@@ -9,6 +9,8 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/mitchellh/go-wordwrap"
+	"golang.org/x/term"
 )
 
 const (
@@ -60,7 +62,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case aiResponse:
-		m.output = append(m.output, chatMessage{gpt, string(msg)})
+		w, _, err := term.GetSize(0)
+		if err != nil {
+			panic(err)
+		}
+		response := wordwrap.WrapString(string(msg), uint(w))
+		m.output = append(m.output, chatMessage{gpt, response})
 		m.isLoading = false
 		m.allowInput = true
 		return m, cmd
@@ -95,7 +102,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m model) View() string {
 	out := []string{
-		withColor(69, "ChatGPT"),
+		withColor(69, "ChatGPT\n"),
 		m.renderOutput(),
 	}
 
@@ -104,9 +111,7 @@ func (m model) View() string {
 	} else {
 		count := fmt.Sprintf("\n%d/%d", len(m.input.Value()), m.input.CharLimit)
 		out = append(out, m.input.View()+withColor(200, count))
-
 	}
 
 	return strings.Join(out, "\n")
-
 }

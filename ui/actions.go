@@ -19,7 +19,7 @@ func (m model) renderOutput() string {
 			col = 123
 		}
 
-		out += fmt.Sprintf("  %s: %s\n", withColor(col, v.sender), v.content)
+		out += fmt.Sprintf("%s:\n%s\n\n", withColor(col, v.sender), v.content)
 	}
 
 	return out
@@ -40,12 +40,13 @@ func (m model) fetchAI() (model, tea.Cmd) {
 	return m, cmd
 }
 
-// DBG
+//lint:ignore U1000 for debugging and developing, so you don't use up your token
 func dbg(a string) tea.Msg {
 	time.Sleep(time.Second)
 	return aiResponse(a)
 
 }
+
 func fetch(prompt string) tea.Cmd {
 	return func() tea.Msg {
 		// return dbg(prompt)
