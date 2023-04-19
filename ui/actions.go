@@ -48,12 +48,12 @@ func dbg(a string) tea.Msg {
 }
 func fetch(prompt string) tea.Cmd {
 	return func() tea.Msg {
-		return dbg(prompt)
+		// return dbg(prompt)
 		result, err := openai.ChatRequest(prompt)
 		if err != nil {
-			return aiResponse("response error here")
+			return aiResponse(err.Error.Message)
 		}
-		return aiResponse(result)
+		return aiResponse(result.Choices[0].Message.Content)
 	}
 }
 
